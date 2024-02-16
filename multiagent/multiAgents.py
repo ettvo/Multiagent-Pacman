@@ -95,8 +95,8 @@ class ReflexAgent(Agent):
         if (currentGameState.hasFood(newPos[0], newPos[1])):
             eval_score += 1000
 
-        def closestFood(state): # pulled from my proj 1
-            foodGrid = state.getFood()
+        def isClosestFood(state, destination): # pulled from my proj 1
+            foodGrid = state.getFood() # can iterate through with asList
             position = state.getPacmanPosition()
             closestPosition = position
             closestDistance = 0
@@ -115,16 +115,12 @@ class ReflexAgent(Agent):
                     y += 1
                 x += 1
                 y = 0
-            return closestPosition
+            return closestPosition == destination
         
 
-        closestDot = closestFood(successorGameState)
-        old_dist = manhattanDistance(closestDot, oldPos)
-        new_dist = manhattanDistance(closestDot, newPos)
-        if (old_dist > new_dist):
-            #       - distance to closest food decreases
-            print("add")
-            eval_score += 200 #* random.random()
+        newPosIsClosest = isClosestFood(successorGameState, newPos)
+        if (newPosIsClosest):
+            eval_score += 300
 
         i = 0
         total = 0
