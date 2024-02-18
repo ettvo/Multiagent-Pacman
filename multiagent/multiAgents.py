@@ -230,7 +230,98 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # pseudocode here
+        # get legal actions of pacman
+        # could have array of [x, [x, [x]]] --> each entry = a level deeper of actions
+        # ghosts want to minimize; pacman wants to maximize
+        # depth --> pacman --> ghost 1 --> ghost 2 --> ghost 3 --> [leaf value or pacman] --> ghost 1, etc. 
+        # value or action? as return value
+        def getActionAndValue(agentIndex: int, action, gameState: GameState, depth: int, totalAgents: int): 
+            # gamestate is successor state after applying action with previous agent
+            # should return [action, value]
+            if (depth == 0 or gameState.isWin() or gameState.isLose()):
+                # print("depth 0: ", [action, self.evaluationFunction(gameState)]) 
+                # return [action, self.evaluationFunction(gameState)] # Minimax agent determines if its a win + the score 
+                # return [action, self.evaluationFunction(gameState.generateSuccessor(agentIndex, move))]
+                return [action, self.evaluationFunction(gameState)]
+            gameState = gameState.generateSuccessor(agentIndex, action)
+            originalAgentIndex = agentIndex
+            if (depth == 0 or gameState.isWin() or gameState.isLose()):
+                # print("depth 0: ", [action, self.evaluationFunction(gameState)]) 
+                # return [action, self.evaluationFunction(gameState)] # Minimax agent determines if its a win + the score 
+                # return [action, self.evaluationFunction(gameState.generateSuccessor(agentIndex, move))]
+                return [action, self.evaluationFunction(gameState)]
+            agentIndex += 1
+            if ((agentIndex == totalAgents and totalAgents > 1) or (totalAgents == 1)):
+                agentIndex = 0
+                depth -= 1
+
+            legalMoves = gameState.getLegalActions(agentIndex)
+            nextDepthEntries = list()
+            for move in legalMoves:
+                # next = [getActionAndValue(agentIndex, move, gameState.generateSuccessor(agentIndex, move), depth, totalAgents)]
+                # if (agentIndex == 0 and depth == 0):
+                #     newState = gameState.generateSuccessor(agentIndex, move)
+                #     next = [action, self.evaluationFunction(newState)]
+                # else:
+                #     next = getActionAndValue(agentIndex, move, gameState, depth, totalAgents)
+                next = getActionAndValue(agentIndex, move, gameState, depth, totalAgents)
+                # print(next)
+                nextDepthEntries.append(next)
+
+            # print("nextDepthEntries: ", nextDepthEntries)
+            if (len(nextDepthEntries) > 0):
+                # print("nextDepthEntries: ", nextDepthEntries)
+                bestVal = nextDepthEntries[0][1]
+                bestAction = nextDepthEntries[0][0]
+            else:
+                print("Len(nextDepthEntries) == 0")
+                print("No action detected?")
+                return [None, 0]
+            # bestVal = nextDepthEntries[0][1] # length should always be nonzero
+            # bestAction = nextDepthEntries[0][0]
+            # if (agentIndex == 0):
+            if (originalAgentIndex == 0):
+                # pacman = maximize
+                for act_val_pair in nextDepthEntries:
+                    if (act_val_pair[1] > bestVal):
+                        bestVal = act_val_pair[1]
+                        bestAction = act_val_pair[0]
+            else:
+                # ghosts = minimize
+                # bestVal = float('inf')
+                for act_val_pair in nextDepthEntries:
+                    if (act_val_pair[1] < bestVal):
+                        bestVal = act_val_pair[1]
+                        bestAction = act_val_pair[0]
+                # need to force recursion if depth > 0
+            return [bestAction, bestVal]
+        
+
+        # goal: agentIndex: int, action, gameState: GameState, depth: int, totalAgents: int
+        # agent index current agent index, action yet to be applied to gameState, gameState, depth, totalAgents
+        # increment agent index after passing to next func 
+        legalMoves = gameState.getLegalActions()
+        # bestPair = [getActionAndValue(0, move, gameState.generateSuccessor(0, move), self.depth, gameState.getNumAgents()) for move in legalMoves]
+        bestPair = [getActionAndValue(0, move, gameState, self.depth, gameState.getNumAgents()) for move in legalMoves]
+        
+        # print(bestPair)
+        bestVal = float('-inf') 
+        bestAction = None
+        for act_val_pair in bestPair:
+            if (act_val_pair[1] > bestVal):
+                bestVal = act_val_pair[1]
+                bestAction = act_val_pair[0]
+        # print("Best Action: ", bestAction)
+        # print("Best Val: ", bestVal)
+        return bestAction
+        # current issue: all calls to getActionValue act as though the function works differently
+
+
+
+
+
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
